@@ -214,7 +214,7 @@ public class MongoDBReader extends Reader {
                     LOG.info(">>>>Current Query:[{}]",query.toJson());
 
                     //这里一定需要使用Limit 而不是batchSize
-                    dbCursor = col.find(query).limit(batchSize).cursor();
+                    dbCursor = col.find(query).sort(new Document(this.updateField,"1")).limit(batchSize).cursor();
                 }
             }else {
                 Document filter = new Document();
