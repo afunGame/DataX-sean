@@ -180,7 +180,7 @@ public class MongoDBReader extends Reader {
                 }
 
 
-                //这里一定需要使用Limit 而不是batchSize
+
                 if (latest_date == null){
                     LOG.warn("Not found data from sink db");
                     //设置一个初始值
@@ -195,7 +195,9 @@ public class MongoDBReader extends Reader {
 
                     LOG.info(">>>>Init Query:[{}]",query.toJson());
 
-                    dbCursor = col.find(query).limit(batchSize).cursor();
+
+                    //第一次全量更新
+                    dbCursor = col.find(query).batchSize(batchSize).cursor();
                 }else {
 
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -204,16 +206,14 @@ public class MongoDBReader extends Reader {
 
                     LOG.info("Found data from sink db,latest {} is {}",this.updateField,utcTimeStr);
 
-                    //当前时间需要晚一分钟
-                    Instant utc_now = Instant.now().atZone(ZoneId.of("UTC")).toInstant().minus(1L, ChronoUnit.MINUTES);
-                    Date end_time = Date.from(utc_now);
-
-                    Document query = new Document(this.updateField, new Document("$gt", latest_date).append("$lte", end_time));
+//                    Document query = new Document(this.updateField, new Document("$gt", latest_date).append("$lte", end_time));
+                    Document query = new Document(this.updateField, new Document("$gt", latest_date));
 
 //                    dbCursor = col.find(new Document("_id",new Document("$gt",new ObjectId(latest_objectId) ))).sort(new Document("_id", 1)).limit(batchSize).cursor();
 
                     LOG.info(">>>>Current Query:[{}]",query.toJson());
 
+                    //这里一定需要使用Limit 而不是batchSize
                     dbCursor = col.find(query).limit(batchSize).cursor();
                 }
             }else {
