@@ -88,22 +88,22 @@ public class CollectionSplitUtil extends Reader {
         System.err.println("dbName:"+dbName);
         System.err.println("collName:"+collName);
         System.err.println("****************************************");
-        MongoDatabase database = mongoClient.getDatabase(dbName);
-        MongoCollection<Document> col = database.getCollection(collName);
+//        MongoDatabase database = mongoClient.getDatabase(dbName);
+//        MongoCollection<Document> col = database.getCollection(collName);
 
-        try {
-            Document doc = col.find().limit(1).first();
-            if (doc == null){
-                LOG.error("Can't found your table,please check your config");
-                System.exit(1);
-            }
-            Object id = doc.get(KeyConstant.MONGO_PRIMARY_ID);
-            return id instanceof ObjectId;
-        } catch (MongoQueryException e) {
-            LOG.warn("mongo query error,will stop current process with exit code 0");
-            //不可执行的命令 切记不能code=0
-            System.exit(126);
-        }
+//        try {
+//            Document doc = col.find().limit(1).first();
+//            if (doc == null){
+//                LOG.error("Can't found your table,please check your config");
+//                System.exit(1);
+//            }
+//            Object id = doc.get(KeyConstant.MONGO_PRIMARY_ID);
+//            return id instanceof ObjectId;
+//        } catch (MongoQueryException e) {
+//            LOG.warn("mongo query error,will stop current process with exit code 0");
+//            //不可执行的命令 切记不能code=0
+//            System.exit(126);
+//        }
         return true;
     }
 
