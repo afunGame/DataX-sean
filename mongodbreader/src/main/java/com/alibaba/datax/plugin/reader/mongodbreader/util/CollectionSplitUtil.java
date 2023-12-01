@@ -101,7 +101,8 @@ public class CollectionSplitUtil extends Reader {
             return id instanceof ObjectId;
         } catch (MongoQueryException e) {
             LOG.warn("mongo query error,will stop current process with exit code 0");
-            System.exit(0);
+            //不可执行的命令 切记不能code=0
+            System.exit(126);
         }
         return true;
     }
