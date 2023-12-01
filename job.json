@@ -1,0 +1,45 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mongodbreader",
+          "parameter": {
+            "address": ["mongodb+srv://test_proxy:q0Tif5Wb5oBznLzIz7w@h01.chusv.mongodb.net/mg_dynamic_30101?retryWrites=true&w=majority"],
+            "dbName": "mg_dynamic_30101",
+            "collectionName": "a_sean_test",
+            "column": [
+              {
+                "name":"_id",
+                "type":"string"
+              },
+              {
+                "name":"name",
+                "type":"string"
+              },
+              {
+                "name":"age",
+                "type":"integer"
+              }],
+            "userName": "test_proxy",
+            "userPassword": "MJVlUzQEDj0eARCu",
+            "batchSize":1,
+            "query": "{ \"age\": { $gt: ${begin} } }"
+          }
+        },
+        "writer": {
+          "name": "streamwriter",
+          "parameter": {
+            "encoding": "",
+            "print": true
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": "1"
+      }
+    }
+  }
+}

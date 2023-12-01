@@ -1,0 +1,159 @@
+{
+  "job": {
+      "content": [
+          {
+              "reader": {
+                  "name": "mongodbreader",
+                  "parameter": {
+                      "address": ["${local_dbhost}:27017","mongodb+srv://${remote_dbuser}:${remote_passwd}@${remote_dbhost}/mg_log_30101"],
+                      "userName": "${local_dbuser}",
+                      "userPassword": "${local_passwd}",
+                      "dbName": "mg_log_30101",
+                      "collectionName": "log_user_transactions_all",
+                      "redirect": false,
+                      "batchSize":50000,
+                      "chPrefix":"mg_log_",
+                      "chUrl":"jdbc:clickhouse://${chHost}:8443/analy?ssl=true&sslmode=STRICT",
+                      "chUser":"${chUser}",
+                      "chPwd":"${chPwd}",
+                      "column": [
+                          {
+                              "name":"_id",
+                              "type":"string"
+                          },
+                          {
+                            "name":"db_app_id",
+                            "type":"integer",
+                            "default":"30101"
+                          },
+                          {
+                            "name":"db_group_id",
+                            "type":"integer",
+                            "default":"1"
+                          },
+                          {
+                              "name":"user_id",
+                              "type":"bigint",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"bill_no",
+                              "type":"string",
+                              "default":""
+                          },
+                          {
+                              "name":"opt_code",
+                              "type":"integer",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"opt_type",
+                              "type":"integer",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"pack_no",
+                              "type":"integer",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"login_ip",
+                              "type":"string",
+                              "default":""
+                          },
+                          {
+                              "name":"ip",
+                              "type":"string",
+                              "default":""
+                          },
+                          {
+                              "name":"mac",
+                              "type":"string",
+                              "default":""
+                          },
+                          {
+                              "name":"amount",
+                              "type":"bigint",
+                              "default":"0"
+                          },
+                          {
+                              "name":"opening_balance",
+                              "type":"bigint",
+                              "default":"0"
+                          },
+                          {
+                              "name":"closing_balance",
+                              "type":"bigint",
+                              "default":"0"
+                          },
+                          {
+                              "name":"opening_balance2",
+                              "type":"bigint",
+                              "default":"0"
+                          },
+                          {
+                              "name":"closing_balance2",
+                              "type":"bigint",
+                              "default":"0"
+                          },
+                          {
+                              "name":"game_id",
+                              "type":"integer",
+                              "default":"0"
+                          },
+                          {
+                              "name":"game_platform_id",
+                              "type":"integer",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"game_class",
+                              "type":"integer",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"round_id",
+                              "type":"string",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"created_at",
+                              "type":"date",
+                              "default":"2023-01-01T01:00:00"
+                          }
+                      ]
+                  }
+              },
+              "writer": {
+                  "name": "clickhousewriter",
+                  "parameter": {
+                      "username": "${chUser}",
+                      "password": "${chPwd}",
+                      "column": ["oid", "db_app_id","db_group_id","user_id","bill_no","opt_code","opt_type","pack_no",
+                                  "login_ip","ip","mac","amount","opening_balance","closing_balance","opening_balance2",
+                                  "closing_balance2","game_id","game_platform_id","game_class","round_id",
+                                  "created_at"
+                                  ],
+                      "connection": [
+                          {
+                              "jdbcUrl": "jdbc:clickhouse://${chHost}:8443/analy?ssl=true&sslmode=STRICT",
+                              "table": ["log_user_transactions"]
+                          }
+                      ],
+                      "preSql": [],
+                      "postSql": [],
+                      "batchSize": 50000,
+                      "batchByteSize": 721664163,
+                      "dryRun": false,
+                      "writeMode": "insert"
+                  }
+              }
+          }
+      ],
+      "setting": {
+          "speed": {
+              "channel": "1"
+          }
+      }
+  }
+}

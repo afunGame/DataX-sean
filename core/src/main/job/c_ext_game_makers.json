@@ -1,0 +1,104 @@
+{
+  "job": {
+      "content": [
+          {
+              "reader": {
+                  "name": "mongodbreader",
+                  "parameter": {
+                      "address": ["${local_dbhost}:27017","mongodb+srv://${remote_dbuser}:${remote_passwd}@${remote_dbhost}/mg_config_1005"],
+                      "userName": "${local_dbuser}",
+                      "userPassword": "${local_passwd}",
+                      "dbName": "mg_config_1005",
+                      "collectionName": "c_ext_game_makers",
+                      "redirect": true,
+                      "column": [
+                          {
+                              "name":"_id",
+                              "type":"string"
+                          },
+                          {
+                            "name":"db_app_id",
+                            "type":"integer",
+                            "default":"1005"
+                          },
+                          {
+                            "name":"db_group_id",
+                            "type":"integer",
+                            "default":"1"
+                          },
+                          {
+                              "name":"app_id",
+                              "type":"integer",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"maker_id",
+                              "type":"integer",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"status",
+                              "type":"integer",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"name",
+                              "type":"string",
+                              "default":""
+                          },
+                          {
+                              "name":"desc",
+                              "type":"string",
+                              "default":""
+                          },
+                          {
+                              "name":"class",
+                              "type":"integer",
+                              "default":"-1"
+                          },
+                          {
+                              "name":"created_at",
+                              "type":"date",
+                              "default":"2023-01-01T01:00:00"
+                          },
+                          {
+                            "name":"updated_at",
+                            "type":"date"
+                          }
+                      ],
+                      "batchSize":50000,
+                      "query": "{ \"updated_at\": { $gt: ISODate(\"${startDate}\"),$lte: ISODate(\"${endDate}\") }}"
+                  }
+              },
+              "writer": {
+                  "name": "clickhousewriter",
+                  "parameter": {
+                      "username": "${chUser}",
+                      "password": "${chPwd}",
+                      "column": ["oid", "db_app_id","db_group_id","app_id","maker_id","status","name",
+                                  "desc","class",
+                                  "created_at","updated_at"
+                                  ],
+                      "connection": [
+                          {
+                              "jdbcUrl": "jdbc:clickhouse://${chHost}:8443/analy?ssl=true&sslmode=STRICT",
+                              "table": ["c_ext_game_makers"]
+                          }
+                      ],
+                      "preSql": [],
+                      "postSql": [],
+                      "batchSize": 100000,
+                      "batchByteSize": 721664163,
+                      "dryRun": false,
+                      "writeMode": "insert"
+                  }
+              }
+          }
+      ],
+      "setting": {
+          "speed": {
+              "channel": "2"
+          }
+      }
+  }
+}
