@@ -146,8 +146,9 @@ public class MongoDBReader extends Reader {
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()){
-                java.sql.Date date = resultSet.getDate(1);
-                return new Date(date.getTime());
+                java.sql.Timestamp timestamp = resultSet.getTimestamp(1);
+                LOG.info("Get timestamp from clickhouse is:{}",timestamp.getTime());
+                return new Date(timestamp.getTime());
             }
             return null;
         }
@@ -200,21 +201,54 @@ public class MongoDBReader extends Reader {
                     dbCursor = col.find(query).batchSize(batchSize).cursor();
                 }else {
 
+                    //根据update_field 判断是否需要更新
+                    //如果更新：需要把开始时间往前偏移1秒钟
+                    //不需要更新：则从当前时间开始
+
+                    Date begin_time = null;
+
+                    if ("updated_at".equals(updateField)){
+                        //为了避免少数据 需要把开始时间往前偏移1秒钟
+                        Instant latest_instant = latest_date.toInstant();
+                        Instant pre_1s_instant = latest_instant.minus(1L, ChronoUnit.SECONDS);
+                        begin_time = Date.from(pre_1s_instant);
+                    }else if ("created_at".equals(updateField)){
+                        begin_time = latest_date;
+                    }else {
+                        throw new RuntimeException("not found update_field,please check your config");
+                    }
+
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     format.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
-                    String utcTimeStr = format.format(latest_date);
+                    String utcTimeStr = format.format(begin_time);
 
                     LOG.info("Found data from sink db,latest {} is {}",this.updateField,utcTimeStr);
 
-//                    Document query = new Document(this.updateField, new Document("$gt", latest_date).append("$lte", end_time));
-                    Document query = new Document(this.updateField, new Document("$gt", latest_date));
+                    Instant utc_now = Instant.now().atZone(ZoneId.of("UTC")).toInstant().minus(1L, ChronoUnit.MINUTES);
+                    Date end_time = Date.from(utc_now);
+
+                    Document query = null;
+                    //这里判断是大于还是大于等于 (gte or gt)
+                    if ("created_at".equals(updateField)){
+                        query =  new Document(this.updateField,
+                                 new Document("$gt", begin_time)
+                                        .append("$lte", end_time));
+                    }else if ("updated_at".equals(updateField)) {
+                        query = new Document(this.updateField,
+                                new Document("$gte", begin_time)
+                                        .append("$lte", end_time));
+                    }else {
+                        throw new RuntimeException("not found update_field,please check your config");
+                    }
+
+//                    Document query = new Document(this.updateField, new Document("$gt", latest_date) );
 
 //                    dbCursor = col.find(new Document("_id",new Document("$gt",new ObjectId(latest_objectId) ))).sort(new Document("_id", 1)).limit(batchSize).cursor();
 
-                    LOG.info(">>>>Current Query:[{}]",query.toJson());
+                    LOG.info(">>>>update field is {}, current Query:[{}]",updateField,query.toJson());
 
-                    //这里一定需要使用Limit 而不是batchSize
-                    dbCursor = col.find(query).sort(new Document(this.updateField,"1")).limit(batchSize).cursor();
+                    //不能使用Limit强制分断,同一时间戳的数据有可能少了
+                    dbCursor = col.find(query).sort(new Document(this.updateField,1)).batchSize(batchSize).cursor();
                 }
             }else {
                 Document filter = new Document();
@@ -320,8 +354,7 @@ public class MongoDBReader extends Reader {
                         record.addColumn(new LongColumn((Integer) tempCol));
                     }else if (tempCol instanceof Long) {
                         Long timestamp = (Long) tempCol;
-//                        System.out.println("+++++++++++++LONG+++++++++++++++");
-//                        System.out.println(timestamp);
+                        //时间戳转成时间
                         if ("date".equals(column.getString(KeyConstant.COLUMN_TYPE))){
                             Instant instant = Instant.ofEpochSecond(timestamp).atZone(ZoneId.of("UTC")).toInstant();
                             Date date = Date.from(instant);
@@ -345,8 +378,7 @@ public class MongoDBReader extends Reader {
                         }
                     }
                 }
-                //update cache
-                //System.out.println("UPDATE CACHE");
+
                 recordSender.sendToWriter(record);
             }
         }

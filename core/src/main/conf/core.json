@@ -10,7 +10,7 @@
             "timeFormat": "HH:mm:ss",
             "dateFormat": "yyyy-MM-dd",
             "extraFormats":["yyyyMMdd"],
-            "timeZone": "GMT-3",
+            "timeZone": "GMT",
             "encoding": "utf-8"
         }
     },
